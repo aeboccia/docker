@@ -1,10 +1,10 @@
 #!/bin/bash
-VERSION="0.9.14"
+VERSION="1.0.0"
 guacamole_volume_path="/opt/guacamole"
 compose_temp="docker-compose.yml.template"
 compose_final="docker-compose.yml"
-auth_jdbc="http://apache.mirror.gtcomm.net/guacamole/${VERSION}-incubating/binary/guacamole-auth-jdbc-${VERSION}-incubating.tar.gz"
-dual_factor="http://apache.mirror.gtcomm.net/guacamole/${VERSION}-incubating/binary/guacamole-auth-duo-${VERSION}-incubating.tar.gz"
+auth_jdbc="http://apache.mirror.gtcomm.net/guacamole/${VERSION}/binary/guacamole-auth-jdbc-${VERSION}.tar.gz"
+dual_factor="http://apache.mirror.gtcomm.net/guacamole/${VERSION}/binary/guacamole-auth-duo-${VERSION}.tar.gz"
 
 #Check for docker-compose
 docker-compose version > /dev/null
@@ -28,11 +28,11 @@ sed -i "s/GUACDBUSERPASSWORD/$GUACDBUSERPASSWORD/g" $compose_final
 # Download the guacamole auth files for MySQL and Duo Auth
 wget $auth_jdbc
 wget $dual_factor
-tar -xzf guacamole-auth-jdbc-${VERSION}-incubating.tar.gz
+tar -xzf guacamole-auth-jdbc-${VERSION}.tar.gz
 
 #Prep Volume Data
 mkdir -p $guacamole_volume_path/extensions
-tar -xzf guacamole-auth-duo-${VERSION}-incubating.tar.gz && mv guacamole-auth-duo*/*.jar $guacamole_volume_path/extensions
+tar -xzf guacamole-auth-duo-${VERSION}.tar.gz && mv guacamole-auth-duo*/*.jar $guacamole_volume_path/extensions
 
 #Copy our custom config
 cp guacamole.properties $guacamole_volume_path
@@ -54,8 +54,10 @@ flush privileges;"
 
 # Execute SQL Code
 echo $SQLCODE | mysql -h 127.0.0.1 -P 3306 -u root -p$MYSQLROOTPASSWORD
-cat guacamole-auth-jdbc-${VERSION}-incubating/mysql/schema/*.sql | mysql -u root -p$MYSQLROOTPASSWORD -h 127.0.0.1 -P 3306 guacamole_db
+cat guacamole-auth-jdbc-${VERSION}/mysql/schema/*.sql | mysql -u root -p$MYSQLROOTPASSWORD -h 127.0.0.1 -P 3306 guacamole_db
 
 #Clean up
 rm -rf guacamole-auth-*
-rm $compose_final
+
+#Commented out by default, can add a conditional but lazy atm.
+#rm $compose_final

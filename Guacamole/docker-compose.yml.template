@@ -1,44 +1,49 @@
-mysql:
-  image: mysql
-  container_name: mysql
-  restart: always
-  environment:
-   - MYSQL_ROOT_PASSWORD=MYSQLROOTPASSWORD
-  ports:
-   - "3306:3306"
-guacd:
-  image: guacamole/guacd
-  container_name: guacd
-  restart: always
-guacamole:
-  image: guacamole/guacamole
-  container_name: guacamole
-  restart: always
-  volumes:
-   - /opt/guacamole/extensions:/opt/guacamole/extensions
-   - /opt/guacamole/guacamole.properties:/opt/guacamole/guacamole.properties
-  links:
-   - mysql:mysql
-   - guacd:guacd
-  environment:
-   - MYSQL_HOSTNAME=127.0.0.1
-   - MYSQL_DATABASE=guacamole_db
-   - MYSQL_USER=guacamole_user
-   - MYSQL_PASSWORD=GUACDBUSERPASSWORD
-   - GUACAMOLE_HOME=/opt/guacamole
-nginx:
-  image: nginx
-  container_name: nginx
-  restart: always
-  volumes:
-   - /opt/docker_compose/web/guacamole_revproxy.conf:/etc/nginx/conf.d/guacamole_revproxy.conf
-   - /opt/docker_compose/web/certs/:/etc/nginx/conf.d/ssl/
-  links:
-   - guacamole:guacamole
-  ports:
-   - "80:80"
-   - "443:443"
-  environment:
-   - NGINX_HOST=my.host.com
-   - NGINX_PORT=80
-   - NGINX_PORT=443
+---
+version: '3'
+services:
+  mysql:
+    image: mariadb
+    container_name: mysql
+    restart: always
+    environment:
+     - MYSQL_ROOT_PASSWORD=MYSQLROOTPASSWORD
+    ports:
+     - "3306:3306"
+
+  guacd:
+    image: guacamole/guacd
+    container_name: guacd
+    restart: always
+
+  guacamole:
+    image: guacamole/guacamole
+    container_name: guacamole
+    restart: always
+    volumes:
+     - /opt/guacamole/extensions:/opt/guacamole/extensions
+     - /opt/guacamole/guacamole.properties:/opt/guacamole/guacamole.properties
+    links:
+     - mysql
+     - guacd
+    environment:
+     - MYSQL_HOSTNAME=mysql
+     - MYSQL_DATABASE=guacamole_db
+     - MYSQL_USER=guacamole_user
+     - MYSQL_PASSWORD=MYSQLPASSWORD
+     - GUACAMOLE_HOME=/opt/guacamole
+     - GUACD_HOSTNAME=guacd
+
+  nginx:
+    image: nginx
+    container_name: nginx
+    restart: always
+    volumes:
+     - /opt/docker_compose/web/guacamole_revproxy.conf:/etc/nginx/conf.d/guacamole_revproxy.conf
+     - /opt/docker_compose/web/certs/:/etc/nginx/conf.d/ssl/
+    links:
+     - guacamole
+    ports:
+     - "443:443"
+    environment:
+     - NGINX_HOST=guac.mydomain.com
+     - NGINX_PORT=443
